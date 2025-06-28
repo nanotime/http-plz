@@ -1,0 +1,10 @@
+node_modules
+dist
+*.md
+*.json
+*.config.*
+*.d.ts
+coverage
+.vscode
+.git
+pnpm-lock.yaml
