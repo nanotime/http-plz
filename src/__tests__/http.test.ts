@@ -243,10 +243,12 @@ describe("createClient", () => {
     expect(client).toHaveProperty("get");
     expect(client).toHaveProperty("post");
     expect(client).toHaveProperty("put");
+    expect(client).toHaveProperty("patch");
     expect(client).toHaveProperty("delete");
     expect(typeof client.get).toBe("function");
     expect(typeof client.post).toBe("function");
     expect(typeof client.put).toBe("function");
+    expect(typeof client.patch).toBe("function");
     expect(typeof client.delete).toBe("function");
   });
 

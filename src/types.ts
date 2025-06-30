@@ -6,7 +6,7 @@ export type RequestOptions = {
   query?: Query;
   opts?: Omit<RequestInit, "method" | "body">;
   resolver?: Resolver;
-  body: unknown;
+  body?: unknown;
 };
 
 export interface QueryParam {
