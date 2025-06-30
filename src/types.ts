@@ -23,3 +23,17 @@ export interface Config {
   options?: RequestInit;
   resolver?: Resolver;
 }
+
+export class HttpError extends Error {
+  name: string;
+  response: Response;
+  body: unknown;
+
+  constructor(response: Response, body: unknown) {
+    super(`HTTP Error: ${response.status} ${response.statusText}`);
+
+    this.name = "HttpError";
+    this.response = response;
+    this.body = body;
+  }
+}

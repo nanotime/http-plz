@@ -1,4 +1,4 @@
-import type { httpResponse } from "../types";
+import { HttpError, type httpResponse } from "../types";
 
 export const request = async <T>(
   url: URL,
@@ -8,12 +8,14 @@ export const request = async <T>(
   const response: httpResponse<T> = await fetch(url, options);
 
   if (!response.ok) {
-    const serializedError = JSON.stringify({
-      message: response.statusText,
-      status: response.status,
-      data: response,
-    });
-    throw new Error(serializedError);
+    let errorBody: unknown = null;
+    try {
+      errorBody = await response.json();
+    } catch {
+      errorBody = await response.text();
+    }
+
+    throw new HttpError(response, errorBody);
   }
 
   response.data = await resolver(response);

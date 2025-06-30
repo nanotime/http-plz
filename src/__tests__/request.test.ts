@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { request } from "../services/request";
+import { HttpError } from "../types";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
@@ -33,12 +34,15 @@ describe("request()", () => {
     expect(result.data).toEqual(mockData);
   });
 
-  it("should throw serialized error when response is not ok", async () => {
+  it("should throw HttpError with JSON error body when response is not ok", async () => {
+    const errorBody = { error: "User not found", code: "USER_NOT_FOUND" };
     const mockResponse = {
       ok: false,
       status: 404,
       statusText: "Not Found",
-    } as Response;
+      json: vi.fn().mockResolvedValue(errorBody),
+      text: vi.fn().mockResolvedValue(JSON.stringify(errorBody)),
+    } as unknown as Response;
 
     mockFetch.mockResolvedValue(mockResponse);
 
@@ -46,23 +50,57 @@ describe("request()", () => {
     const options: RequestInit = { method: "GET" };
     const resolver = (res: Response) => res.json();
 
-    await expect(request(url, options, resolver)).rejects.toThrow(
-      JSON.stringify({
-        message: "Not Found",
-        status: 404,
-        data: mockResponse,
-      }),
-    );
+    try {
+      await request(url, options, resolver);
+      expect.fail("Expected request to throw HttpError");
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpError);
+      expect((error as HttpError).response).toBe(mockResponse);
+      expect((error as HttpError).body).toEqual(errorBody);
+      expect((error as HttpError).message).toBe("HTTP Error: 404 Not Found");
+      expect((error as HttpError).name).toBe("HttpError");
+    }
 
     expect(mockFetch).toHaveBeenCalledWith(url, options);
+    expect(mockResponse.json).toHaveBeenCalled();
   });
 
-  it("should handle different HTTP error status codes", async () => {
+  it("should throw HttpError with text error body when JSON parsing fails", async () => {
+    const errorText = "Internal Server Error - Database connection failed";
+    const mockResponse = {
+      ok: false,
+      status: 500,
+      statusText: "Internal Server Error",
+      json: vi.fn().mockRejectedValue(new Error("Invalid JSON")),
+      text: vi.fn().mockResolvedValue(errorText),
+    } as unknown as Response;
+
+    mockFetch.mockResolvedValue(mockResponse);
+
+    const url = new URL("https://api.example.com/users");
+    const options: RequestInit = { method: "GET" };
+    const resolver = (res: Response) => res.json();
+
+    try {
+      await request(url, options, resolver);
+      expect.fail("Expected request to throw HttpError");
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpError);
+      expect((error as HttpError).response).toBe(mockResponse);
+      expect((error as HttpError).body).toBe(errorText);
+      expect((error as HttpError).message).toBe("HTTP Error: 500 Internal Server Error");
+    }
+
+    expect(mockResponse.json).toHaveBeenCalled();
+    expect(mockResponse.text).toHaveBeenCalled();
+  });
+
+  it("should handle different HTTP error status codes with proper HttpError instances", async () => {
     const testCases = [
-      { status: 400, statusText: "Bad Request" },
-      { status: 401, statusText: "Unauthorized" },
-      { status: 403, statusText: "Forbidden" },
-      { status: 500, statusText: "Internal Server Error" },
+      { status: 400, statusText: "Bad Request", errorBody: { message: "Invalid input" } },
+      { status: 401, statusText: "Unauthorized", errorBody: { error: "Token expired" } },
+      { status: 403, statusText: "Forbidden", errorBody: { message: "Access denied" } },
+      { status: 500, statusText: "Internal Server Error", errorBody: { error: "Server error" } },
     ];
 
     for (const testCase of testCases) {
@@ -70,7 +108,9 @@ describe("request()", () => {
         ok: false,
         status: testCase.status,
         statusText: testCase.statusText,
-      } as Response;
+        json: vi.fn().mockResolvedValue(testCase.errorBody),
+        text: vi.fn().mockResolvedValue(JSON.stringify(testCase.errorBody)),
+      } as unknown as Response;
 
       mockFetch.mockResolvedValue(mockResponse);
 
@@ -78,13 +118,43 @@ describe("request()", () => {
       const options: RequestInit = { method: "GET" };
       const resolver = (res: Response) => res.json();
 
-      await expect(request(url, options, resolver)).rejects.toThrow(
-        JSON.stringify({
-          message: testCase.statusText,
-          status: testCase.status,
-          data: mockResponse,
-        }),
-      );
+      try {
+        await request(url, options, resolver);
+        expect.fail(`Expected request to throw HttpError for status ${testCase.status}`);
+      } catch (error) {
+        expect(error).toBeInstanceOf(HttpError);
+        expect((error as HttpError).response.status).toBe(testCase.status);
+        expect((error as HttpError).body).toEqual(testCase.errorBody);
+        expect((error as HttpError).message).toBe(
+          `HTTP Error: ${testCase.status} ${testCase.statusText}`,
+        );
+      }
+    }
+  });
+
+  it("should handle plain text error responses", async () => {
+    const errorText = "Service temporarily unavailable";
+    const mockResponse = {
+      ok: false,
+      status: 503,
+      statusText: "Service Unavailable",
+      json: vi.fn().mockRejectedValue(new Error("Not JSON")),
+      text: vi.fn().mockResolvedValue(errorText),
+    } as unknown as Response;
+
+    mockFetch.mockResolvedValue(mockResponse);
+
+    const url = new URL("https://api.example.com/health");
+    const options: RequestInit = { method: "GET" };
+    const resolver = (res: Response) => res.json();
+
+    try {
+      await request(url, options, resolver);
+      expect.fail("Expected request to throw HttpError");
+    } catch (error) {
+      expect(error).toBeInstanceOf(HttpError);
+      expect((error as HttpError).body).toBe(errorText);
+      expect((error as HttpError).response.status).toBe(503);
     }
   });
 
