@@ -1,4 +1,4 @@
-import type { Query } from "../types";
+import type { Query } from '../types';
 
 export const queryFactory = (url: URL, params: Query) => {
   const newUrl = new URL(url);

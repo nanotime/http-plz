@@ -1,10 +1,10 @@
-export type Resolver = "json" | "text" | "blob" | "arrayBuffer" | "formData";
+export type Resolver = 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData';
 export type Query = { [key: string]: string };
 
 export type RequestOptions = {
   path: string;
   query?: Query;
-  opts?: Omit<RequestInit, "method" | "body">;
+  opts?: Omit<RequestInit, 'method' | 'body'>;
   resolver?: Resolver;
   body?: unknown;
 };
@@ -28,12 +28,14 @@ export class HttpError extends Error {
   name: string;
   response: Response;
   body: unknown;
+  requestOptions: RequestInit;
 
-  constructor(response: Response, body: unknown) {
+  constructor(req: RequestInit, response: Response, body: unknown) {
     super(`HTTP Error: ${response.status} ${response.statusText}`);
 
-    this.name = "HttpError";
+    this.name = 'HttpError';
     this.response = response;
     this.body = body;
+    this.requestOptions = req;
   }
 }

@@ -1,23 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import httpPlz from "../index";
-import { createClient } from "../services/http";
-import type { Config } from "../types";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import httpPlz from '../index';
+import { createClient } from '../services/http';
+import type { Config } from '../types';
 
 // Mock the http service
-vi.mock("../services/http");
+vi.mock('../services/http');
 
 const mockCreateClient = vi.mocked(createClient);
 
-describe("httpPlz Main Export", () => {
+describe('httpPlz Main Export', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should export a function", () => {
-    expect(typeof httpPlz).toBe("function");
+  it('should export a function', () => {
+    expect(typeof httpPlz).toBe('function');
   });
 
-  it("should call createClient with provided config", () => {
+  it('should call createClient with provided config', () => {
     const mockClient = {
       get: vi.fn(),
       post: vi.fn(),
@@ -28,11 +28,11 @@ describe("httpPlz Main Export", () => {
     mockCreateClient.mockReturnValue(mockClient);
 
     const config: Config = {
-      baseURL: "https://api.example.com",
+      baseURL: 'https://api.example.com',
       options: {
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
       },
-      resolver: "json",
+      resolver: 'json',
     };
 
     const result = httpPlz(config);
@@ -41,7 +41,7 @@ describe("httpPlz Main Export", () => {
     expect(result).toBe(mockClient);
   });
 
-  it("should work with minimal config", () => {
+  it('should work with minimal config', () => {
     const mockClient = {
       get: vi.fn(),
       post: vi.fn(),
@@ -52,7 +52,7 @@ describe("httpPlz Main Export", () => {
     mockCreateClient.mockReturnValue(mockClient);
 
     const minimalConfig: Config = {
-      baseURL: "https://api.example.com",
+      baseURL: 'https://api.example.com',
     };
 
     const result = httpPlz(minimalConfig);
@@ -61,7 +61,7 @@ describe("httpPlz Main Export", () => {
     expect(result).toBe(mockClient);
   });
 
-  it("should return the client created by createClient", () => {
+  it('should return the client created by createClient', () => {
     const expectedClient = {
       get: vi.fn(),
       post: vi.fn(),
@@ -72,7 +72,7 @@ describe("httpPlz Main Export", () => {
     mockCreateClient.mockReturnValue(expectedClient);
 
     const config: Config = {
-      baseURL: "https://api.example.com",
+      baseURL: 'https://api.example.com',
     };
 
     const actualClient = httpPlz(config);
