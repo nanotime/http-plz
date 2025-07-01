@@ -1,6 +1,7 @@
 # http-plz
 
-A lightweight TypeScript library that wraps the fetch API with quality of life features
+A lightweight TypeScript fetch wrapper library that provides quality-of-life improvements including explicit path construction, type-safe query parameters, consistent error formatting, and automatic content handling.
+
 [![npm version](https://badge.fury.io/js/http-plz.svg)](https://badge.fury.io/js/http-plz)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -206,13 +207,194 @@ try {
   const response = await api.get({ path: '/users' });
   console.log(response.data);
 } catch (error) {
-  const errorData = JSON.parse(error.message);
-  console.error('Request failed:', {
-    status: errorData.status,
-    message: errorData.message,
-  });
+  if (error instanceof HttpError) {
+    console.error('Request failed:', {
+      status: error.response.status,
+      statusText: error.response.statusText,
+      body: error.body,
+      requestOptions: error.requestOptions,
+    });
+  }
 }
 ```
+
+## Error Handling
+
+The library provides structured error handling through the `HttpError` class. When a request fails (non-2xx status codes), the library formats the error and throws it for you to handle as needed.
+
+### HttpError Class
+
+```typescript
+class HttpError extends Error {
+  name: string;
+  response: Response;
+  body: unknown;
+  requestOptions: RequestInit;
+
+  constructor(req: RequestInit, response: Response, body: unknown) {
+    super(`HTTP Error: ${response.status} ${response.statusText}`);
+    this.name = 'HttpError';
+    this.response = response;
+    this.body = body;
+    this.requestOptions = req;
+  }
+}
+```
+
+### Error Properties
+
+- **`response`**: The original Response object from fetch
+- **`body`**: The error response body (parsed as JSON if possible, otherwise as text)
+- **`requestOptions`**: The RequestInit options used for the request
+- **`message`**: Formatted error message with status code and status text
+
+### Error Handling Examples
+
+```typescript
+import { HttpError } from 'http-plz';
+
+try {
+  const response = await api.get({ path: '/users/999' });
+} catch (error) {
+  if (error instanceof HttpError) {
+    // Access specific error information
+    console.error(`Status: ${error.response.status}`);
+    console.error(`Status Text: ${error.response.statusText}`);
+    console.error(`Error Body:`, error.body);
+    console.error(`Request URL: ${error.response.url}`);
+
+    // Handle specific status codes
+    switch (error.response.status) {
+      case 404:
+        console.error('Resource not found');
+        break;
+      case 401:
+        console.error('Unauthorized - check your credentials');
+        break;
+      case 500:
+        console.error('Server error - try again later');
+        break;
+      default:
+        console.error('Request failed:', error.message);
+    }
+  }
+}
+```
+
+The library doesn't perform any automatic error recovery or retries - it simply formats errors consistently and lets you handle them according to your application's needs.
+
+## Request Body and Headers
+
+The library automatically handles request bodies and headers based on the input type, determining the appropriate content type and processing method for each body format.
+
+### Body Processing
+
+The library uses the `processBody` utility to automatically detect and handle different body types:
+
+#### JSON Objects
+```typescript
+await api.post({
+  path: '/users',
+  body: { name: 'John', email: 'john@example.com' }
+  // Automatically stringified with Content-Type: application/json
+});
+```
+
+#### FormData
+```typescript
+const formData = new FormData();
+formData.append('name', 'John');
+formData.append('file', fileInput);
+
+await api.post({
+  path: '/upload',
+  body: formData
+  // Content-Type: multipart/form-data (set automatically by browser)
+});
+```
+
+#### URLSearchParams
+```typescript
+const params = new URLSearchParams();
+params.append('name', 'John');
+params.append('email', 'john@example.com');
+
+await api.post({
+  path: '/form-submit',
+  body: params
+  // Content-Type: application/x-www-form-urlencoded
+});
+```
+
+#### String Data
+```typescript
+await api.post({
+  path: '/text',
+  body: 'Plain text content'
+  // Sent as-is (no automatic Content-Type)
+});
+```
+
+#### Binary Data (Blob/ArrayBuffer)
+```typescript
+const blob = new Blob(['binary data'], { type: 'application/octet-stream' });
+
+await api.post({
+  path: '/binary',
+  body: blob
+  // Sent as-is (Content-Type from blob if available)
+});
+```
+
+### Header Management
+
+Headers are merged in the following priority order (highest to lowest):
+
+1. **Per-request headers** (in `opts.headers`)
+2. **Automatic Content-Type** (based on body type)
+3. **Base configuration headers** (from `config.options.headers`)
+
+#### Example: Header Precedence
+```typescript
+const api = httpPlz({
+  baseURL: 'https://api.example.com',
+  options: {
+    headers: {
+      'Authorization': 'Bearer token',
+      'Content-Type': 'application/json', // Will be overridden
+    },
+  },
+});
+
+await api.post({
+  path: '/upload',
+  body: formData, // Sets Content-Type: multipart/form-data
+  opts: {
+    headers: {
+      'X-Custom-Header': 'custom-value', // Highest priority
+    },
+  },
+});
+// Final headers:
+// - Authorization: Bearer token (from base config)
+// - Content-Type: multipart/form-data (automatic, overrides base)
+// - X-Custom-Header: custom-value (per-request)
+```
+
+#### Disabling Automatic Content-Type
+```typescript
+await api.post({
+  path: '/custom',
+  body: { data: 'value' },
+  opts: {
+    headers: {
+      'Content-Type': 'application/custom+json', // Override automatic detection
+    },
+  },
+});
+```
+
+The library handles content processing transparently - you simply provide the body in the format that makes sense for your use case, and the appropriate headers and encoding are applied automatically.
 
 ## Response Object
 
