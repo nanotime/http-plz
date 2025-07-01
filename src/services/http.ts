@@ -1,6 +1,7 @@
 import type { Config, RequestOptions } from '../types';
 import { pathFactory } from '../utils/pathFactory';
 import { queryFactory } from '../utils/queryFactory';
+import { processBody } from '../utils/processBody';
 import { request } from './request';
 
 export const createHttpRequest =
@@ -24,7 +25,16 @@ export const createHttpRequest =
       method,
     };
 
-    if (body) reqConfig.body = JSON.stringify(body);
+    if (body != null) {
+      const { processedBody, contentType } = processBody(body);
+      reqConfig.body = processedBody;
+
+      reqConfig.headers = {
+        ...reqConfig.headers,
+        ...(contentType && { 'Content-Type': contentType }),
+        ...opts.headers,
+      };
+    }
 
     const reqResolver = (res: Response) => res[resolver]();
     return request<T>(url, reqConfig, reqResolver);
