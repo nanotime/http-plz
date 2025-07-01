@@ -12,8 +12,6 @@ A lightweight TypeScript fetch wrapper library that provides quality-of-life imp
 ## Features
 
 - 🚀 **Simple API**: Clean and intuitive interface built on top of fetch
-- 🔧 **Path Management**: Automatic URL path construction with `pathFactory`
-- 🔍 **Query Parameters**: Easy query parameter handling with `queryFactory`
 - 📝 **TypeScript Support**: Full TypeScript support with type safety
 - 🎯 **Multiple Response Types**: Support for JSON, text, blob, arrayBuffer, and formData
 - ⚡ **Lightweight**: Minimal dependencies and small bundle size
@@ -407,31 +405,6 @@ The library returns an enhanced Response object with an additional `data` proper
 interface httpResponse<T = unknown> extends Response {
   data?: T;
 }
-```
-
-## Utilities
-
-### pathFactory
-
-Constructs URLs by combining a base URL with a path:
-
-```typescript
-import { pathFactory } from 'http-plz/utils';
-
-const url = pathFactory('https://api.example.com', '/users/123');
-// Returns: URL object for 'https://api.example.com/users/123'
-```
-
-### queryFactory
-
-Adds query parameters to a URL:
-
-```typescript
-import { queryFactory } from 'http-plz/utils';
-
-const url = new URL('https://api.example.com/users');
-const urlWithQuery = queryFactory(url, { page: '1', limit: '10' });
-// Returns: URL object for 'https://api.example.com/users?page=1&limit=10'
 ```
 
 ## Roadmap
