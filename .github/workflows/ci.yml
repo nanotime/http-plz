@@ -5,23 +5,22 @@ name: CI Pipeline
 # Disparadores: Se ejecuta en cada 'push' a la rama 'main' y en cada 'pull request'
 on:
   push:
-    branches: [ "main" ]
+    branches: ['main']
   pull_request:
-    branches: [ "main" ]
+    branches: ['main']
 
 jobs:
   build_and_test:
-
     runs-on: ubuntu-latest
 
-    steps:      
+    steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
