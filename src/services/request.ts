@@ -1,21 +1,23 @@
-import { HttpError, type httpResponse } from "../types";
+import { HttpError, type httpResponse } from '../types';
 
 export const request = async <T>(
   url: URL,
   options: RequestInit,
   resolver: (res: Response) => Promise<T>,
 ): Promise<httpResponse<T>> => {
-  const response: httpResponse<T> = await fetch(url, options);
+  const req = fetch(url, options);
+  const response: httpResponse<T> = await req;
 
   if (!response.ok) {
+    const clone = response.clone();
     let errorBody: unknown = null;
     try {
-      errorBody = await response.json();
+      errorBody = await clone.json();
     } catch {
       errorBody = await response.text();
     }
 
-    throw new HttpError(response, errorBody);
+    throw new HttpError(options, response, errorBody);
   }
 
   response.data = await resolver(response);
