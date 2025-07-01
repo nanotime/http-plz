@@ -5,6 +5,8 @@ A lightweight TypeScript fetch wrapper library that provides quality-of-life imp
 [![npm version](https://badge.fury.io/js/http-plz.svg)](https://badge.fury.io/js/http-plz)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![CI Pipeline](https://github.com/nanotime/http-plz/actions/workflows/ci.yml/badge.svg)](https://github.com/nanotime/http-plz/actions/workflows/ci.yml)
+[![Release](https://github.com/nanotime/http-plz/actions/workflows/release.yml/badge.svg)](https://github.com/nanotime/http-plz/actions/workflows/release.yml)
 
 ## Features
 
