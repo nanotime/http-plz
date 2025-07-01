@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'chore(release):')"
 
+    permissions:
+      contents: write # Para poder hacer push de commits y tags
+      issues: write # Para poder comentar en issues
+      pull-requests: write # Para poder comentar en PRs
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
