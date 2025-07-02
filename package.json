@@ -21,6 +21,7 @@
     "format:check": "prettier --check ./src"
   },
   "devDependencies": {
+    "@codecov/vite-plugin": "^1.9.1",
     "@semantic-release/changelog": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
     "@types/node": "^24.0.7",

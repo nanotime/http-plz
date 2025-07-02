@@ -3,6 +3,7 @@
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 import { fileURLToPath } from "url";
+import { codecovVitePlugin } from "@codecov/vite-plugin";
 
 export default defineConfig({
   build: {
@@ -15,6 +16,11 @@ export default defineConfig({
   plugins: [
     dts({
       insertTypesEntry: true,
+    }),
+    codecovVitePlugin({
+      enableBundleAnalysis: process.env.CODECOV_TOKEN !== undefined,
+      bundleName: "http-plz",
+      uploadToken: process.env.CODECOV_TOKEN,
     }),
   ],
   test: {
