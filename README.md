@@ -16,6 +16,7 @@ A lightweight TypeScript fetch wrapper library that provides quality-of-life imp
 - 🎯 **Multiple Response Types**: Support for JSON, text, blob, arrayBuffer, and formData
 - ⚡ **Lightweight**: Minimal dependencies and small bundle size
 - 🔄 **Request Configuration**: Flexible request options and headers management
+- 🔌 **Middleware System**: Powerful request and response interceptors with predictable execution order
 
 ## Installation
 
@@ -284,6 +285,65 @@ try {
 
 The library doesn't perform any automatic error recovery or retries - it simply formats errors consistently and lets you handle them according to your application's needs.
 
+## Middleware System
+
+The middleware system in this library is designed to be simple, powerful, and predictable. It's based on "stacks" (execution chains) that clearly separate the *request* logic from the *response* logic, much like Axios interceptors, but with a more explicit approach.
+
+The main reason for this architecture is *simplicity and clarity*. Instead of a single, overloaded interceptor, you have two distinct chains, each with a single, clear responsibility.
+
+### Execution Order: Symmetry is Key
+
+For complete control, each stack executes in a specific order, creating a symmetrical "wrapping" effect:
+
+* **Request Stack:** Executes in **FIFO (First-In, First-Out)** order. The first middleware you define is the first one to run.
+* **Response Stack:** Executes in **FILO (First-In, Last-Out)** order. The last middleware you define is the first one to process the response.
+
+This **FILO** order for the response is crucial. It means that the first middleware to "wrap" the request is the last one to "unwrap" the response. This creates perfect symmetry, ideal for tasks like timing or logging, ensuring that the start and end of a single feature execute in the correct layers.
+
+### Practical Example: The Execution Flow
+
+Imagine you register two middlewares for each stack to see this behavior in action.
+
+**Middleware Definitions:**
+```typescript
+const requestMiddleware1 = async (options) => {
+  console.log("1. Request Middleware 1 (Outer Layer)");
+  return options;
+};
+const requestMiddleware2 = async (options) => {
+  console.log("2. Request Middleware 2 (Inner Layer)");
+  return options;
+};
+
+const responseMiddleware1 = async (response) => {
+  console.log("5. Response Middleware 1 (Outer Layer)");
+  return response;
+};
+const responseMiddleware2 = async (response) => {
+  console.log("4. Response Middleware 2 (Inner Layer)");
+  return response;
+};
+
+// Client registration
+const client = createClient({
+  requestMiddlewares: [requestMiddleware1, requestMiddleware2],
+  responseMiddlewares: [responseMiddleware1, responseMiddleware2],
+});
+
+client.get({ path: '/test' });
+```
+
+**Console Output:**
+```
+1. Request Middleware 1 (Outer Layer)
+2. Request Middleware 2 (Inner Layer)
+3. [HTTP Request is made]
+4. Response Middleware 2 (Inner Layer)
+5. Response Middleware 1 (Outer Layer)
+```
+
+As you can see, the flow is like an onion. Request Middleware 1 and Response Middleware 1 act as the outermost layer, while Request Middleware 2 and Response Middleware 2 are the inner layer that directly wraps the fetch call. This FILO order in the response is what guarantees this symmetry, allowing you to manage a "layer's" state or logic predictably.
+
 ## Request Body and Headers
 
 The library automatically handles request bodies and headers based on the input type, determining the appropriate content type and processing method for each body format.
@@ -410,11 +470,6 @@ interface httpResponse<T = unknown> extends Response {
 ## Roadmap
 
 ### 🚧 Upcoming Features
-
-- **Middleware System**: Intercept and modify requests and responses
-  - Request interceptors for authentication, logging, etc.
-  - Response interceptors for data transformation, error handling
-  - Configurable middleware pipeline
 
 - **Plugin Architecture**: Extend functionality with plugins (not sure if I'll add all of them, but this architecture opens the possibility to create yours)
   - Authentication plugins (OAuth, JWT, API keys)
