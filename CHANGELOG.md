@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/nanotime/http-plz/compare/v1.0.0...v1.1.0) (2025-07-05)
+
+
+### Features
+
+* added middleware system ([4fa9974](https://github.com/nanotime/http-plz/commit/4fa99746cf42c59856ab25ede777e4bad0cfd9b5))
+
 # 1.0.0 (2025-07-02)
 
 
