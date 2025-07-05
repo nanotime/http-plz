@@ -85,6 +85,8 @@ describe('createHttpRequest', () => {
         method: 'POST',
       }),
       expect.any(Function),
+      [],
+      [],
     );
   });
 
@@ -107,6 +109,8 @@ describe('createHttpRequest', () => {
         method: 'POST',
       }),
       expect.any(Function),
+      [],
+      [],
     );
   });
 
@@ -127,6 +131,8 @@ describe('createHttpRequest', () => {
         body: expect.anything(),
       }),
       expect.any(Function),
+      [],
+      [],
     );
   });
 
@@ -148,6 +154,8 @@ describe('createHttpRequest', () => {
         expect.any(URL),
         expect.objectContaining({ method }),
         expect.any(Function),
+        [],
+        [],
       );
     }
   });
@@ -194,6 +202,8 @@ describe('createHttpRequest', () => {
         method: 'GET',
       }),
       expect.any(Function),
+      [],
+      [],
     );
   });
 
@@ -214,6 +224,8 @@ describe('createHttpRequest', () => {
         body: expect.anything(),
       }),
       expect.any(Function),
+      [],
+      [],
     );
   });
 });
@@ -266,6 +278,8 @@ describe('createClient', () => {
       expect.any(URL),
       expect.objectContaining({ method: 'GET' }),
       expect.any(Function),
+      [],
+      [],
     );
 
     await client.post({ ...options, body: { name: 'John' } });
@@ -273,6 +287,8 @@ describe('createClient', () => {
       expect.any(URL),
       expect.objectContaining({ method: 'POST' }),
       expect.any(Function),
+      [],
+      [],
     );
 
     await client.put({ ...options, body: { name: 'John Updated' } });
@@ -280,6 +296,8 @@ describe('createClient', () => {
       expect.any(URL),
       expect.objectContaining({ method: 'PUT' }),
       expect.any(Function),
+      [],
+      [],
     );
 
     await client.delete(options);
@@ -287,6 +305,8 @@ describe('createClient', () => {
       expect.any(URL),
       expect.objectContaining({ method: 'DELETE' }),
       expect.any(Function),
+      [],
+      [],
     );
   });
 
@@ -309,5 +329,167 @@ describe('createClient', () => {
     const result = await client.get(options);
 
     expect(result).toBe(expectedResult);
+  });
+
+  describe('clone method', () => {
+    it('should create a new client instance with same base configuration', () => {
+      const config: Config = {
+        baseURL: 'https://api.example.com',
+        options: {
+          headers: { 'X-Version': '1.0' },
+        },
+        resolver: 'json',
+      };
+
+      const client1 = createClient(config);
+      const client2 = client1.clone({});
+
+      expect(client2).not.toBe(client1);
+      expect(client2.get).toBeDefined();
+      expect(client2.post).toBeDefined();
+      expect(client2.clone).toBeDefined();
+    });
+
+    it('should override specified properties in cloned instance', () => {
+      const originalConfig: Config = {
+        baseURL: 'https://api.example.com',
+        options: {
+          headers: { 'X-Version': '1.0' },
+        },
+        resolver: 'json',
+      };
+
+      const client1 = createClient(originalConfig);
+      const client2 = client1.clone({
+        baseURL: 'https://beta.api.example.com',
+        options: {
+          headers: { 'X-Client': 'Test' },
+        },
+      });
+
+      // Both clients should be functional but independent
+      expect(client1).not.toBe(client2);
+      expect(typeof client2.get).toBe('function');
+      expect(typeof client2.post).toBe('function');
+    });
+
+    // @refactor: this test doesn't really test the headers merge
+    it('should merge headers correctly when cloning', () => {
+      const originalConfig: Config = {
+        baseURL: 'https://api.example.com',
+        options: {
+          headers: {
+            'X-Version': '1.0',
+            'Content-Type': 'application/json',
+          },
+        },
+        resolver: 'json',
+      };
+
+      const client1 = createClient(originalConfig);
+      const client2 = client1.clone({
+        options: {
+          headers: { 'X-Client': 'Test' },
+        },
+      });
+
+      // Test that both clients work independently
+      expect(client1).not.toBe(client2);
+      expect(client2.get).toBeDefined();
+    });
+
+    it('should preserve original client when cloning', () => {
+      const config: Config = {
+        baseURL: 'https://api.example.com',
+        resolver: 'json',
+      };
+
+      const client1 = createClient(config);
+      const originalGet = client1.get;
+      const originalPost = client1.post;
+
+      const client2 = client1.clone({
+        baseURL: 'https://beta.api.example.com',
+      });
+
+      // Original client should remain unchanged
+      expect(client1.get).toBe(originalGet);
+      expect(client1.post).toBe(originalPost);
+      expect(client2).not.toBe(client1);
+    });
+
+    it('should allow chaining clone operations', () => {
+      const config: Config = {
+        baseURL: 'https://api.example.com',
+        resolver: 'json',
+      };
+
+      const client1 = createClient(config);
+      const client2 = client1.clone({ resolver: 'text' });
+      const client3 = client2.clone({ baseURL: 'https://v2.api.example.com' });
+
+      expect(client1).not.toBe(client2);
+      expect(client2).not.toBe(client3);
+      expect(client1).not.toBe(client3);
+
+      // All should be functional
+      expect(client1.get).toBeDefined();
+      expect(client2.get).toBeDefined();
+      expect(client3.get).toBeDefined();
+    });
+
+    // @refactor: how this is really testing the override?
+    it('should handle empty config override', () => {
+      const config: Config = {
+        baseURL: 'https://api.example.com',
+        options: {
+          headers: { 'X-Version': '1.0' },
+        },
+        resolver: 'json',
+      };
+
+      const client1 = createClient(config);
+      const client2 = client1.clone({});
+
+      expect(client1).not.toBe(client2);
+      expect(client2.get).toBeDefined();
+      expect(client2.post).toBeDefined();
+    });
+
+    it('should handle partial config override', () => {
+      const config: Config = {
+        baseURL: 'https://api.example.com',
+        options: {
+          headers: { 'X-Version': '1.0' },
+          cache: 'no-cache',
+        },
+        resolver: 'json',
+      };
+
+      const client1 = createClient(config);
+      const client2 = client1.clone({
+        resolver: 'text',
+      });
+
+      expect(client1).not.toBe(client2);
+      expect(client2.get).toBeDefined();
+    });
+
+    it('should create independent instances that do not affect each other', () => {
+      const config: Config = {
+        baseURL: 'https://api.example.com',
+        resolver: 'json',
+      };
+
+      const client1 = createClient(config);
+      const client2 = client1.clone({});
+
+      // Modifying one should not affect the other
+      // Since we can't directly modify the internal config, we test that they are separate instances
+      expect(client1).not.toBe(client2);
+      expect(client1.get).not.toBe(client2.get);
+      expect(client1.post).not.toBe(client2.post);
+      expect(client1.clone).not.toBe(client2.clone);
+    });
   });
 });

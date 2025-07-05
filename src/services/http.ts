@@ -1,8 +1,9 @@
-import type { Config, RequestOptions } from '../types';
+import type { Config, HttpClient, RequestOptions } from '../types';
 import { pathFactory } from '../utils/pathFactory';
 import { queryFactory } from '../utils/queryFactory';
 import { processBody } from '../utils/processBody';
 import { request } from './request';
+import { merge } from 'es-toolkit';
 
 export const createHttpRequest =
   (config: Config) =>
@@ -30,24 +31,36 @@ export const createHttpRequest =
       reqConfig.body = processedBody;
 
       reqConfig.headers = {
-        ...reqConfig.headers,
         ...(contentType && { 'Content-Type': contentType }),
+        ...reqConfig.headers,
         ...opts.headers,
       };
     }
 
     const reqResolver = (res: Response) => res[resolver]();
-    return request<T>(url, reqConfig, reqResolver);
+    return request<T>(
+      url,
+      reqConfig,
+      reqResolver,
+      config.requestMiddleware || [],
+      config.responseMiddleware || [],
+    );
   };
 
-export const createClient = (config: Config) => {
+export const createClient = (config: Config): HttpClient => {
   const httpMethod = createHttpRequest(config);
 
-  return {
+  const client: HttpClient = {
     get: <T>(options: RequestOptions) => httpMethod<T>('GET', options),
     post: <T>(options: RequestOptions) => httpMethod<T>('POST', options),
     put: <T>(options: RequestOptions) => httpMethod<T>('PUT', options),
     patch: <T>(options: RequestOptions) => httpMethod<T>('PATCH', options),
     delete: <T>(options: RequestOptions) => httpMethod<T>('DELETE', options),
+    clone: (newConfig: Partial<Config>) => {
+      const merged = merge(config, newConfig);
+      return createClient(merged);
+    },
   };
+
+  return client;
 };

@@ -24,6 +24,7 @@ describe('httpPlz Main Export', () => {
       put: vi.fn(),
       patch: vi.fn(),
       delete: vi.fn(),
+      clone: vi.fn(),
     };
     mockCreateClient.mockReturnValue(mockClient);
 
@@ -48,6 +49,7 @@ describe('httpPlz Main Export', () => {
       put: vi.fn(),
       patch: vi.fn(),
       delete: vi.fn(),
+      clone: vi.fn(),
     };
     mockCreateClient.mockReturnValue(mockClient);
 
@@ -68,6 +70,7 @@ describe('httpPlz Main Export', () => {
       put: vi.fn(),
       patch: vi.fn(),
       delete: vi.fn(),
+      clone: vi.fn(),
     };
     mockCreateClient.mockReturnValue(expectedClient);
 
