@@ -6,6 +6,7 @@ export type HttpClient = {
   delete: <T>(options: RequestOptions) => Promise<httpResponse<T>>;
   clone: (newConfig: Partial<Config>) => HttpClient;
 };
+
 export type Resolver = 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData';
 export type Query = { [key: string]: string };
 
