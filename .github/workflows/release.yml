@@ -11,7 +11,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    if: "contains(github.event.head_commit.message, '[release]')"
 
     permissions:
       contents: write # Para poder hacer push de commits y tags
