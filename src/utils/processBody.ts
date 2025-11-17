@@ -18,8 +18,12 @@ export function processBody(body: unknown): { processedBody: BodyInit; contentTy
     return { processedBody: body };
   }
 
-  if (body instanceof ArrayBuffer || ArrayBuffer.isView(body)) {
+  if (body instanceof ArrayBuffer) {
     return { processedBody: body };
+  }
+
+  if (ArrayBuffer.isView(body) && body.buffer instanceof ArrayBuffer) {
+    return { processedBody: body as ArrayBufferView<ArrayBuffer> };
   }
 
   return {
