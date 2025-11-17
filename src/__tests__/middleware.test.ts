@@ -7,12 +7,18 @@ const mockFetch = vi.fn();
 (globalThis as any).fetch = mockFetch;
 
 const createMockResponse = (baseResponse: Partial<Response>) => {
+  const defaults = {
+    headers: new Headers(),
+  };
+
   const mockResponse = {
+    ...defaults,
     ...baseResponse,
     clone: vi.fn(),
   } as unknown as Response;
 
   (mockResponse.clone as any).mockReturnValue({
+    ...defaults,
     ...baseResponse,
     clone: vi.fn(),
   });
@@ -247,7 +253,7 @@ describe('Response Middlewares', () => {
       const newHeaders = new Headers(response.headers);
       newHeaders.set('X-Processed', 'true');
 
-      return new Response(response.body, {
+      return new Response(JSON.stringify({ success: true }), {
         status: response.status,
         statusText: response.statusText,
         headers: newHeaders,
@@ -293,7 +299,7 @@ describe('Response Middlewares', () => {
       const newHeaders = new Headers(response.headers);
       newHeaders.set('X-Async-Processed', 'true');
 
-      return new Response(response.body, {
+      return new Response(JSON.stringify({ success: true }), {
         status: response.status,
         statusText: response.statusText,
         headers: newHeaders,
@@ -397,7 +403,7 @@ describe('Middleware Integration', () => {
       const newHeaders = new Headers(response.headers);
       newHeaders.set('X-Response', 'processed');
 
-      return new Response(response.body, {
+      return new Response(JSON.stringify({ success: true }), {
         status: response.status,
         statusText: response.statusText,
         headers: newHeaders,

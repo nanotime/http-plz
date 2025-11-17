@@ -24,15 +24,12 @@ const runResponseMiddleware = async (res: Response, middlewares: ResponseMiddlew
 export const request = async <T>(
   url: URL,
   options: RequestInit,
-  resolver: (res: Response) => Promise<T>,
+  resolver: ((res: Response) => Promise<T>) | null,
   requestMiddlewares: RequestMiddleware[] = [],
   responseMiddlewares: ResponseMiddleware[] = [],
 ): Promise<httpResponse<T>> => {
   const finalOptions = await runRequestMiddleware(options, requestMiddlewares);
-  let response: httpResponse<T> = await fetch(url, finalOptions);
-
-  const responseForResolver = response.clone();
-  response = await runResponseMiddleware(response, responseMiddlewares);
+  const response: httpResponse<T> = await fetch(url, finalOptions);
 
   if (!response.ok) {
     const clone = response.clone();
@@ -42,10 +39,33 @@ export const request = async <T>(
     } catch {
       errorBody = await response.text();
     }
-
     throw new HttpError(options, response, errorBody);
   }
 
-  response.data = await resolver(responseForResolver);
-  return response;
+  const processingResponse = response.clone();
+  const processedByMiddleware = await runResponseMiddleware(
+    processingResponse,
+    responseMiddlewares,
+  );
+
+  let data: T | undefined;
+  if (resolver) {
+    data = await resolver(processedByMiddleware);
+  }
+
+  const finalResponse = new Proxy(processedByMiddleware, {
+    get(target, prop) {
+      if (prop === 'body') {
+        return response.body;
+      }
+      if (prop === 'bodyUsed') {
+        return response.bodyUsed;
+      }
+      return Reflect.get(target, prop);
+    },
+  }) as httpResponse<T>;
+
+  finalResponse.data = data;
+
+  return finalResponse;
 };
