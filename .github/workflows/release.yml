@@ -22,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -44,4 +44,4 @@ jobs:
         run: pnpm semantic-release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.SEMANTIC_RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
