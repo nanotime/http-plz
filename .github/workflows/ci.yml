@@ -2,7 +2,6 @@
 
 name: CI Pipeline
 
-# Disparadores: Se ejecuta en cada 'push' a la rama 'main' y en cada 'pull request'
 on:
   push:
     branches: ['main']
@@ -43,3 +42,42 @@ jobs:
 
       - name: Build package
         run: pnpm run build
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: build_and_test
+    if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]')"
+
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+      
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build package
+        run: pnpm run build
+
+      - name: Release to NPM
+        run: pnpm semantic-release
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
