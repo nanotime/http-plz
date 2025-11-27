@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/nanotime/http-plz/compare/v1.1.1...v1.1.2) (2025-11-27)
+
+
+### Bug Fixes
+
+* **core:** allow null resolver to return raw stream ([0af93c6](https://github.com/nanotime/http-plz/commit/0af93c6f965f39a547694cd0aa59832509fbaff0))
+
 ## [1.1.1](https://github.com/nanotime/http-plz/compare/v1.1.0...v1.1.1) (2025-11-27)
 
 
