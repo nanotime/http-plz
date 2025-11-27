@@ -9,13 +9,7 @@ export const createHttpRequest =
   (config: Config) =>
   async <T>(
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
-    {
-      path = '',
-      query = {},
-      opts = {},
-      resolver = config.resolver || 'json',
-      body,
-    }: RequestOptions,
+    { path = '', query = {}, opts = {}, resolver = config.resolver, body }: RequestOptions,
   ) => {
     let url = pathFactory(config.baseURL, path);
     if (Object.keys(query).length) url = queryFactory(url, query);
@@ -37,14 +31,32 @@ export const createHttpRequest =
       };
     }
 
-    const reqResolver = (res: Response) => res[resolver]();
     return request<T>(
       url,
       reqConfig,
-      reqResolver,
+      resolver ? (res: Response) => res[resolver]() : null,
       config.requestMiddleware || [],
       config.responseMiddleware || [],
     );
+
+    // if (resolver) {
+    //   const reqResolver = (res: Response) => res[resolver]();
+    //   return request<T>(
+    //     url,
+    //     reqConfig,
+    //     reqResolver,
+    //     config.requestMiddleware || [],
+    //     config.responseMiddleware || [],
+    //   );
+    // }
+
+    // return request<T>(
+    //   url,
+    //   reqConfig,
+    //   null,
+    //   config.requestMiddleware || [],
+    //   config.responseMiddleware || [],
+    // );
   };
 
 export const createClient = (config: Config): HttpClient => {

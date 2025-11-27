@@ -201,7 +201,7 @@ describe('createHttpRequest', () => {
       expect.objectContaining({
         method: 'GET',
       }),
-      expect.any(Function),
+      null,
       [],
       [],
     );

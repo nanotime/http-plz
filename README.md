@@ -14,6 +14,7 @@ A lightweight TypeScript fetch wrapper library that provides quality-of-life imp
 - 🚀 **Simple API**: Clean and intuitive interface built on top of fetch
 - 📝 **TypeScript Support**: Full TypeScript support with type safety
 - 🎯 **Multiple Response Types**: Support for JSON, text, blob, arrayBuffer, and formData
+- 🌊 **Raw Response Streaming**: Get the raw `ReadableStream` for manual processing.
 - ⚡ **Lightweight**: Minimal dependencies and small bundle size
 - 🔄 **Request Configuration**: Flexible request options and headers management
 - 🔌 **Middleware System**: Powerful request and response interceptors with predictable execution order
@@ -64,7 +65,7 @@ const user = await api.post({
 interface Config {
   baseURL: string;
   options?: RequestInit;
-  resolver?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData';
+  resolver?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData' | null;
 }
 ```
 
@@ -75,7 +76,7 @@ interface RequestOptions {
   path: string;
   query?: { [key: string]: string };
   opts?: Omit<RequestInit, 'method' | 'body'>;
-  resolver?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData';
+  resolver?: 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData' | null;
   body?: unknown;
 }
 ```
@@ -118,6 +119,7 @@ import httpPlz from 'http-plz';
 
 const api = httpPlz({
   baseURL: 'https://api.example.com',
+  resolver: 'json', // Set a default resolver
 });
 
 const users = await api.get({
@@ -182,14 +184,20 @@ const response = await api.get({
 
 ### Different Response Types
 
+The library can automatically parse the response body into different formats. You can specify the desired format using the `resolver` option in the client configuration or in a specific request.
+
 ```typescript
-// JSON response (default)
-const jsonData = await api.get({
-  path: '/data.json',
+// JSON response (default in this example)
+const api = httpPlz({
+  baseURL: 'https://api.example.com',
   resolver: 'json',
 });
 
-// Text response
+const jsonData = await api.get({
+  path: '/data.json', // Inherits 'json' resolver
+});
+
+// Text response (overriding the default)
 const textData = await api.get({
   path: '/data.txt',
   resolver: 'text',
@@ -200,6 +208,52 @@ const fileBlob = await api.get({
   path: '/file.pdf',
   resolver: 'blob',
 });
+```
+
+#### Raw Response Streaming
+
+For advanced use cases, like handling very large files or server-sent events, you can get the raw `ReadableStream` from the response.
+
+**1. Overriding a Default Resolver**
+
+If your client has a default resolver, you can override it by setting `resolver: null` in your request.
+
+```typescript
+const api = httpPlz({
+  baseURL: 'https://api.example.com',
+  resolver: 'json', // Default resolver
+});
+
+// Get the raw stream by overriding the default
+const streamResponse = await api.get({
+  path: '/stream',
+  resolver: null,
+});
+
+// The `data` property will be undefined
+console.log(streamResponse.data); // undefined
+
+// You can process the stream manually
+if (streamResponse.body) {
+  const reader = streamResponse.body.getReader();
+  // ... process the stream
+}
+```
+
+**2. No Default Resolver**
+
+If you don't set a default resolver on the client, requests will return a stream by default.
+
+```typescript
+const streamApi = httpPlz({
+  baseURL: 'https://api.example.com',
+  // No default resolver
+});
+
+// This will return the raw stream
+const response = await streamApi.get({ path: '/stream' });
+
+// `response.data` is undefined, and you can use `response.body`
 ```
 
 ### Error Handling
@@ -466,19 +520,6 @@ interface httpResponse<T = unknown> extends Response {
   data?: T;
 }
 ```
-
-## Roadmap
-
-### 🚧 Upcoming Features
-
-- **Plugin Architecture**: Extend functionality with plugins (not sure if I'll add all of them, but this architecture opens the possibility to create yours)
-  - Authentication plugins (OAuth, JWT, API keys)
-  - Caching plugins (in-memory, localStorage, custom)
-  - Retry logic plugins with exponential backoff
-  - Request/response transformation plugins
-
-- **Built-in Retry Logic**: Configurable retry strategies
-- **Request/Response Logging**: Debug and monitoring capabilities
 
 ## Development
 
