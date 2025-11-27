@@ -1,3 +1,13 @@
+## [1.1.1](https://github.com/nanotime/http-plz/compare/v1.1.0...v1.1.1) (2025-11-27)
+
+
+### Bug Fixes
+
+* allowing release to push [release] ([da72751](https://github.com/nanotime/http-plz/commit/da72751faaaf32862152c5b8a3ff3416c836b320))
+* changed the secret [release] ([25730bb](https://github.com/nanotime/http-plz/commit/25730bb0f67e7815e77886b05af4b4e50b02c55b))
+* **core:** ensure response body is not consumed by middlewares ([2e3946f](https://github.com/nanotime/http-plz/commit/2e3946f93392c3156529444b293575a9b84f2b6b))
+* **utils:** handle ArrayBuffer views in processBody ([287cea0](https://github.com/nanotime/http-plz/commit/287cea0b103cf76a429a4f811058a459712d86f6))
+
 # [1.1.0](https://github.com/nanotime/http-plz/compare/v1.0.0...v1.1.0) (2025-07-05)
 
 
