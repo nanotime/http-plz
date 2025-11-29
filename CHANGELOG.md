@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/nanotime/http-plz/compare/v1.1.4...v1.2.0) (2025-11-29)
+
+
+### Features
+
+* **src/services/http:** added body typing [release] ([ce687a6](https://github.com/nanotime/http-plz/commit/ce687a68277abcb09e17b83ae204bc77d51050b6))
+
 ## [1.1.4](https://github.com/nanotime/http-plz/compare/v1.1.3...v1.1.4) (2025-11-29)
 
 
