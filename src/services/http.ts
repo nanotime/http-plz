@@ -7,9 +7,9 @@ import { merge } from 'es-toolkit';
 
 export const createHttpRequest =
   (config: Config) =>
-  async <T>(
+  async <R, B = unknown>(
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
-    { path = '', query = {}, opts = {}, resolver = config.resolver, body }: RequestOptions,
+    { path = '', query = {}, opts = {}, resolver = config.resolver, body }: RequestOptions<B>,
   ) => {
     let url = pathFactory(config.baseURL, path);
     if (Object.keys(query).length) url = queryFactory(url, query);
@@ -31,7 +31,7 @@ export const createHttpRequest =
       };
     }
 
-    return request<T>(
+    return request<R>(
       url,
       reqConfig,
       resolver ? (res: Response) => res[resolver]() : null,
@@ -45,9 +45,9 @@ export const createClient = (config: Config): HttpClient => {
 
   const client: HttpClient = {
     get: <T>(options: RequestOptions) => httpMethod<T>('GET', options),
-    post: <T>(options: RequestOptions) => httpMethod<T>('POST', options),
-    put: <T>(options: RequestOptions) => httpMethod<T>('PUT', options),
-    patch: <T>(options: RequestOptions) => httpMethod<T>('PATCH', options),
+    post: <T, B = unknown>(options: RequestOptions<B>) => httpMethod<T, B>('POST', options),
+    put: <T, B = unknown>(options: RequestOptions<B>) => httpMethod<T, B>('PUT', options),
+    patch: <T, B = unknown>(options: RequestOptions<B>) => httpMethod<T, B>('PATCH', options),
     delete: <T>(options: RequestOptions) => httpMethod<T>('DELETE', options),
     clone: (newConfig: Partial<Config>) => {
       const merged = merge(config, newConfig);

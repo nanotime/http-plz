@@ -1,20 +1,20 @@
 export type HttpClient = {
   get: <T>(options: RequestOptions) => Promise<httpResponse<T>>;
-  post: <T>(options: RequestOptions) => Promise<httpResponse<T>>;
-  put: <T>(options: RequestOptions) => Promise<httpResponse<T>>;
-  patch: <T>(options: RequestOptions) => Promise<httpResponse<T>>;
+  post: <T, B = unknown>(options: RequestOptions<B>) => Promise<httpResponse<T>>;
+  put: <T, B = unknown>(options: RequestOptions<B>) => Promise<httpResponse<T>>;
+  patch: <T, B = unknown>(options: RequestOptions<B>) => Promise<httpResponse<T>>;
   delete: <T>(options: RequestOptions) => Promise<httpResponse<T>>;
   clone: (newConfig: Partial<Config>) => HttpClient;
 };
 export type Resolver = 'json' | 'text' | 'blob' | 'arrayBuffer' | 'formData' | null;
 export type Query = { [key: string]: string };
 
-export type RequestOptions = {
+export type RequestOptions<B = unknown> = {
   path: string;
   query?: Query;
   opts?: Omit<RequestInit, 'method' | 'body'>;
   resolver?: Resolver;
-  body?: unknown;
+  body?: B;
 };
 
 export interface QueryParam {
