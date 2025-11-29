@@ -38,25 +38,6 @@ export const createHttpRequest =
       config.requestMiddleware || [],
       config.responseMiddleware || [],
     );
-
-    // if (resolver) {
-    //   const reqResolver = (res: Response) => res[resolver]();
-    //   return request<T>(
-    //     url,
-    //     reqConfig,
-    //     reqResolver,
-    //     config.requestMiddleware || [],
-    //     config.responseMiddleware || [],
-    //   );
-    // }
-
-    // return request<T>(
-    //   url,
-    //   reqConfig,
-    //   null,
-    //   config.requestMiddleware || [],
-    //   config.responseMiddleware || [],
-    // );
   };
 
 export const createClient = (config: Config): HttpClient => {
