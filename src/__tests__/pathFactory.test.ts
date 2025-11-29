@@ -17,4 +17,10 @@ describe('pathFactory()', () => {
     expect(url.host).toBe('abc.com');
     expect(url.pathname).toBe('/users');
   });
+
+  it('should keep the host path and adds the new path', () => {
+    const url = pathFactory('http://abc.com/api', '/users');
+    expect(url.host).toBe('abc.com');
+    expect(url.pathname).toBe('/api/users');
+  });
 });
