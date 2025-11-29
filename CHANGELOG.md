@@ -1,3 +1,10 @@
+## [1.1.4](https://github.com/nanotime/http-plz/compare/v1.1.3...v1.1.4) (2025-11-29)
+
+
+### Bug Fixes
+
+* **src/utils/pathFactory:** path resolution bug resolved [release] ([2262b28](https://github.com/nanotime/http-plz/commit/2262b2882528d54852182af4ed96319cc9c18f48))
+
 ## [1.1.3](https://github.com/nanotime/http-plz/compare/v1.1.2...v1.1.3) (2025-11-29)
 
 
