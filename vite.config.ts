@@ -8,9 +8,10 @@ import { codecovVitePlugin } from "@codecov/vite-plugin";
 export default defineConfig({
   build: {
     lib: {
-      entry: fileURLToPath(new URL("./src/index.ts", import.meta.url)),
-      name: "HttpPlz",
-      fileName: "http-plz",
+      entry: fileURLToPath(new URL('./src/index.ts', import.meta.url)),
+      name: 'HttpPlz',
+      formats: ['es', 'cjs'],
+      fileName: (format) => `http-plz.${format === 'es' ? 'js' : 'cjs'}`,
     },
   },
   plugins: [

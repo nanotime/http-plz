@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import httpPlz from '../index';
+import { httpPlz } from '../index';
 import { createClient } from '../services/http';
 import type { Config } from '../types';
 
