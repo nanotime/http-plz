@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/nanotime/http-plz/compare/v1.1.2...v1.1.3) (2025-11-29)
+
+
+### Bug Fixes
+
+* **build:** ensure proper module exports for cjs and esm ([f9c4831](https://github.com/nanotime/http-plz/commit/f9c48318383fdaf219ce83c32607382fe9163674))
+
 ## [1.1.2](https://github.com/nanotime/http-plz/compare/v1.1.1...v1.1.2) (2025-11-27)
 
 
